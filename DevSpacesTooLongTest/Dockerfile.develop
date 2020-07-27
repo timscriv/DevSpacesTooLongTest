@@ -1,0 +1,21 @@
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1
+ARG BUILD_CONFIGURATION=Debug
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_URLS=http://+:80
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+EXPOSE 80
+EXPOSE 443
+RUN curl -sL https://deb.nodesource.com/setup_10.x |  bash -
+RUN apt-get install -y nodejs
+
+WORKDIR /src
+COPY ["DevSpacesTooLongTest/DevSpacesTooLongTest.csproj", "DevSpacesTooLongTest/"]
+
+RUN dotnet restore "DevSpacesTooLongTest/DevSpacesTooLongTest.csproj"
+COPY . .
+WORKDIR "/src/DevSpacesTooLongTest"
+RUN dotnet build --no-restore "DevSpacesTooLongTest.csproj" -c $BUILD_CONFIGURATION
+
+RUN echo "exec dotnet run --no-build --no-launch-profile -c $BUILD_CONFIGURATION --" > /entrypoint.sh
+
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
